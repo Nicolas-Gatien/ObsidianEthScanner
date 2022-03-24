@@ -1,0 +1,44 @@
+{
+  "collapse-filter": true,
+  "search": "",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": true,
+  "colorGroups": [
+    {
+      "query": "tag:#🧊Block",
+      "color": {
+        "a": 1,
+        "rgb": 14701138
+      }
+    },
+    {
+      "query": "tag:#💸Transaction",
+      "color": {
+        "a": 1,
+        "rgb": 14725458
+      }
+    },
+    {
+      "query": "tag:#📜Account",
+      "color": {
+        "a": 1,
+        "rgb": 5419488
+      }
+    }
+  ],
+  "collapse-display": true,
+  "showArrow": false,
+  "textFadeMultiplier": 3,
+  "nodeSizeMultiplier": 0.638696053847169,
+  "lineSizeMultiplier": 0.390365580044873,
+  "collapse-forces": true,
+  "centerStrength": 0.10269764957265,
+  "repelStrength": 13.1650641025641,
+  "linkStrength": 1,
+  "linkDistance": 30,
+  "scale": 0.11660891579457325,
+  "close": false
+}

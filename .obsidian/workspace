@@ -1,0 +1,98 @@
+{
+  "main": {
+    "id": "5616cede17b65c81",
+    "type": "split",
+    "children": [
+      {
+        "id": "de3c3e68d43a7468",
+        "type": "leaf",
+        "state": {
+          "type": "graph",
+          "state": {}
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "a8140222c116a9be",
+    "type": "split",
+    "children": [
+      {
+        "id": "1cf8ccccc9e1e291",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2b29e3713b1832b7",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "f3baa21ee02212df",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "a552cba5d09cef80",
+    "type": "split",
+    "children": [
+      {
+        "id": "653f53e7fd5784f3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "002ebe8b283abea4",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "active": "de3c3e68d43a7468",
+  "lastOpenFiles": [
+    "0x440e8e846270f30daab3c890d181ab48ae68a111.md",
+    "0x7f268357a8c2552623316e2562d90e642bb538e5.md",
+    "0x0b35c5595ef7be1ec738cf4c6d2347972098ba3d5b9af0ee4dff5f12251348b9.md",
+    "0x0ac0f65edcfdbc4d56f69216755eb859c269290c635a768cfd576f7eb71b91f4.md",
+    "0x1399f5a07bba99a66fb41c079d33809833b99301a0204a2a1ee7a36b1bb9fb31.md",
+    "14446452.md",
+    "14446440.md",
+    "0x0dfbcd7f260bf74b8dbd33ad03db517cf4ddda6695b55d856eb6806f630055f9.md",
+    "14446427.md",
+    "14446398.md"
+  ]
+}
