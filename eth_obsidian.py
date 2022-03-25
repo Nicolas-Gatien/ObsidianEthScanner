@@ -5,12 +5,14 @@ from mdutils.mdutils import MdUtils
 import datetime
 import os
 
+# Constants
 API_KEY = "QQCFPZXGZPDPRK7CKMM6GIPJTMGRM3CX8J"
-address = "0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae"
-
 BASE_URL = "https://api.etherscan.io/api"
 
-class bcolors:
+transactionQueue = []
+
+# Classes
+class Colours:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
     OKCYAN = '\033[96m'
@@ -21,11 +23,46 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-def get_latest_block(timestamp):
-    url = BASE_URL + f"?module=block&action=getblocknobytime&timestamp={timestamp}&closest=before&apikey={API_KEY}"
-    return url
+class Block:
+    def __init__(self, number, timestamp, miner, transactions):
+        self.number = number
+        self.timestamp = timestamp
+        self.miner = miner
+        self.transactions = transactions
 
-def get_block(number):
+class Transaction:
+    def __init__(self, fromAddr, toAddr, amount, hash):
+        self.hash = hash
+        self.fromAddr = fromAddr
+        self.toAddr = toAddr
+        self.amout = amount
+
+class Account:
+    pass
+
+def get_timestamp():
+    now = datetime.datetime.now()
+    unixNow = datetime.datetime.timestamp(now)*1000
+    latestTimestamp = int(int(unixNow)/1000)
+    return latestTimestamp
+
+def get_latest_block():
+    url = BASE_URL + f"?module=block&action=getblocknobytime&timestamp={get_timestamp()}&closest=before&apikey={API_KEY}"
+    response = get(url)
+    data = response.json()
+    blockNum = data["result"]
+
+    response = get(get_block_url(blockNum))
+    data = response.json()["result"]
+    blockMiner = data["blockMiner"]
+    timestamp = data["timeStamp"]
+
+    txResponse = get(get_transactions(blockNum))
+    txData = txResponse.json()["result"]
+    
+    return Block(blockNum, timestamp, blockMiner, txData)
+
+def get_block_url(number):
     url = BASE_URL + f"?module=block&action=getblockreward&blockno={number}&apikey={API_KEY}"
     return url
 
@@ -48,57 +85,48 @@ def construct_account_file(hash):
 
         accMdFile.create_md_file()
 
-def construct_block_file(url):
-    response = get(url)
-    data = response.json()["result"]
-    blockNum = data["blockNumber"]
-    blockMiner = data["blockMiner"]
-    construct_account_file(blockMiner)
-    lastBlock = int(blockNum) - 1
-    nextBlock = int(blockNum) + 1
-    print(f"{bcolors.OKGREEN}Found Block #{blockNum}{bcolors.ENDC}")
+def construct_block_file(block):
+    construct_account_file(block.miner)
+    lastBlock = int(block.number) - 1
+    nextBlock = int(block.number) + 1
+    print(f"{Colours.OKGREEN}Found Block #{block.number}{Colours.ENDC}")
 
-    if (find(blockNum + ".md", "./") == "None"):
-        mdFile = MdUtils(file_name=blockNum,title=("Block #" + blockNum))
+    if (find(block.number + ".md", "./") == "None"):
+        mdFile = MdUtils(file_name=block.number,title=("Block #" + block.number))
         mdFile.new_line("#🧊Block")
         mdFile.new_line(f"Last Block: [[{lastBlock}]]")
         mdFile.new_line(f"Next Block: [[{nextBlock}]]")
-        mdFile.new_line(f"Miner: [[{blockMiner}]]")
+        mdFile.new_line(f"Miner: [[{block.miner}]]")
 
         mdFile.new_line(f"\n Transactions:")
 
-        txResponse = get(get_transactions(blockNum))
-        txData = txResponse.json()["result"]
-
         lastHash = ""
         txCount = 0
-        for tx in txData:
-            toAddr = tx["to"]
-            fromAddr = tx["from"]
-            hash = tx["hash"]
-            value = tx["value"]
+        for tx in block.transactions:
+            transactionQueue.append(Transaction(tx["from"], tx["to"], int(tx["value"]) / (10 ** 18), tx["hash"]))
+            print(len(transactionQueue))
             txCount += 1
 
-            construct_account_file(toAddr)
-            construct_account_file(fromAddr)
+            '''construct_account_file(toAddr)
+            construct_account_file(fromAddr)'''
 
-            fileCreated = False
+            '''fileCreated = False
             while(fileCreated == False):
                 txMdFile = MdUtils(file_name=hash,title=("Transaction Hash: " + hash))
                 txMdFile.new_line("#💸Transaction")
-                txMdFile.new_line(f"Block: [[{blockNum}]]")
+                txMdFile.new_line(f"Block: [[{block.number}]]")
                 txMdFile.new_line(f"From: [[{fromAddr}]]")
                 txMdFile.new_line(f"To: [[{toAddr}]]")
                 txMdFile.new_line(f"Transferred: {int(value) / (10 ** 18)} Ether")
                 txMdFile.create_md_file()
-                print(f"{bcolors.OKGREEN}{txCount}. Creating Transaction File: {hash}{bcolors.ENDC}")
+                print(f"{Colours.OKGREEN}{txCount}. Creating Transaction File: {hash}{Colours.ENDC}")
                 if (find(hash + ".md", "./") != "None"):
                     fileCreated = True
 
             if hash != lastHash:
                 mdFile.new_line(f"[[{hash}]]")
             
-            lastHash = hash
+            lastHash = hash'''
         mdFile.create_md_file()
     
 def find(name, path):
@@ -112,17 +140,12 @@ blockCount = 0
 checkCount = 0
 lastCheckBlock = ""
 while(blockCount < 25):
-    now = datetime.datetime.now()
-    unixNow = datetime.datetime.timestamp(now)*1000
-    blockURL = get_latest_block(int(int(unixNow)/1000))
-    response = get(blockURL)
-    data = response.json()
-    blockNum = data["result"]
+    block = get_latest_block()
     checkCount += 1
-    if(blockNum != lastCheckBlock):
-        construct_block_file(get_block(blockNum))
+    if(block.number != lastCheckBlock):
+        construct_block_file(block)
         blockCount += 1
         checkCount = 0
     else:
-        print(f"{bcolors.WARNING}{checkCount} No New Blocks | Current Count: {blockCount}{bcolors.ENDC}")
-    lastCheckBlock = blockNum
+        print(f"{Colours.WARNING}{checkCount} No New Blocks | Current Count: {block.number}{Colours.ENDC}")
+    lastCheckBlock = block.number
