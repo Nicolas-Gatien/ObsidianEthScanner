@@ -1,6 +1,7 @@
 from unittest import result
 from requests import get
 from mdutils.mdutils import MdUtils
+from threading import Thread
 
 import datetime
 import os
@@ -35,7 +36,7 @@ class Transaction:
         self.hash = hash
         self.fromAddr = fromAddr
         self.toAddr = toAddr
-        self.amout = amount
+        self.amount = amount
 
 class Account:
     pass
@@ -67,7 +68,7 @@ def get_block_url(number):
     return url
 
 def get_transactions(blockNum):
-    url = BASE_URL + f"?module=account&action=txlistinternal&startblock={blockNum}&endblock={blockNum}&page=1&offset=100&sort=asc&apikey={API_KEY}"
+    url = BASE_URL + f"?module=account&action=txlistinternal&startblock={blockNum}&endblock={blockNum}&page=1&offset=500&sort=asc&apikey={API_KEY}"
     return url
 
 def get_balance(address):
@@ -84,6 +85,27 @@ def construct_account_file(hash):
         accMdFile.new_line(f"Balance: {int(balance) / (10 ** 18)} Ether")
 
         accMdFile.create_md_file()
+
+def construct_transaction_file():
+    for tx in range(len(transactionQueue)):
+        if tx < len(transactionQueue):
+            transaction = transactionQueue[tx]
+            txMdFile = MdUtils(file_name=transaction.hash,title=("Transaction Hash: " + transaction.hash))
+            txMdFile.new_line("#💸Transaction")
+            txMdFile.new_line(f"Block: [[{block.number}]]")
+            txMdFile.new_line(f"From: [[{transaction.fromAddr}]]")
+            txMdFile.new_line(f"To: [[{transaction.toAddr}]]")
+            txMdFile.new_line(f"Transferred: {transaction.amount} Ether")
+
+            print(transaction.hash)
+
+            txMdFile.create_md_file()
+            if(len(transactionQueue)>0):
+                transactionQueue.pop(tx)
+
+        '''construct_account_file(transaction.toAddr)
+        construct_account_file(transaction.fromAddr)'''
+
 
 def construct_block_file(block):
     construct_account_file(block.miner)
@@ -104,11 +126,9 @@ def construct_block_file(block):
         txCount = 0
         for tx in block.transactions:
             transactionQueue.append(Transaction(tx["from"], tx["to"], int(tx["value"]) / (10 ** 18), tx["hash"]))
-            print(len(transactionQueue))
             txCount += 1
 
-            '''construct_account_file(toAddr)
-            construct_account_file(fromAddr)'''
+
 
             '''fileCreated = False
             while(fileCreated == False):
@@ -128,7 +148,8 @@ def construct_block_file(block):
             
             lastHash = hash'''
         mdFile.create_md_file()
-    
+        print(f"{len(transactionQueue)} Transactions Found")
+
 def find(name, path):
     for root, dirs, files in os.walk(path):
         if name in files:
@@ -142,10 +163,17 @@ lastCheckBlock = ""
 while(blockCount < 25):
     block = get_latest_block()
     checkCount += 1
+
+    if(len(transactionQueue)> 0):
+        thread = Thread(target = construct_transaction_file())
+        thread.start()
+        thread.join()
+
     if(block.number != lastCheckBlock):
         construct_block_file(block)
+
         blockCount += 1
         checkCount = 0
     else:
-        print(f"{Colours.WARNING}{checkCount} No New Blocks | Current Count: {block.number}{Colours.ENDC}")
+        print(f"{Colours.WARNING}{checkCount} No New Blocks | Current Count: {block.number}{Colours.ENDC} | Transaction Queue: {len(transactionQueue)}")
     lastCheckBlock = block.number
