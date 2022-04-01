@@ -2,6 +2,7 @@ from unittest import result
 from requests import get
 from mdutils.mdutils import MdUtils
 from threading import Thread
+from data_types import Block, Account, Transaction, NFT
 
 import datetime
 import os
@@ -10,7 +11,8 @@ import os
 API_KEY = "QQCFPZXGZPDPRK7CKMM6GIPJTMGRM3CX8J"
 BASE_URL = "https://api.etherscan.io/api"
 
-transactionQueue = []
+transaction_queue = []
+account_queue = []
 
 # Classes
 class Colours:
@@ -24,44 +26,27 @@ class Colours:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-class Block:
-    def __init__(self, number, timestamp, miner, transactions):
-        self.number = number
-        self.timestamp = timestamp
-        self.miner = miner
-        self.transactions = transactions
-
-class Transaction:
-    def __init__(self, fromAddr, toAddr, amount, hash):
-        self.hash = hash
-        self.fromAddr = fromAddr
-        self.toAddr = toAddr
-        self.amount = amount
-
-class Account:
-    pass
-
 def get_timestamp():
     now = datetime.datetime.now()
-    unixNow = datetime.datetime.timestamp(now)*1000
-    latestTimestamp = int(int(unixNow)/1000)
-    return latestTimestamp
+    unix_now = datetime.datetime.timestamp(now)*1000
+    latest_timestamp = int(int(unix_now)/1000)
+    return latest_timestamp
 
 def get_latest_block():
     url = BASE_URL + f"?module=block&action=getblocknobytime&timestamp={get_timestamp()}&closest=before&apikey={API_KEY}"
     response = get(url)
     data = response.json()
-    blockNum = data["result"]
+    block_number = data["result"]
 
-    response = get(get_block_url(blockNum))
+    response = get(get_block_url(block_number))
     data = response.json()["result"]
-    blockMiner = data["blockMiner"]
+    block_miner = data["blockMiner"]
     timestamp = data["timeStamp"]
 
-    txResponse = get(get_transactions(blockNum))
-    txData = txResponse.json()["result"]
+    transaction_response = get(get_transactions(block_number))
+    transaction_data = transaction_response.json()["result"]
     
-    return Block(blockNum, timestamp, blockMiner, txData)
+    return Block(block_number, timestamp, block_miner, transaction_data)
 
 def get_block_url(number):
     url = BASE_URL + f"?module=block&action=getblockreward&blockno={number}&apikey={API_KEY}"
@@ -77,78 +62,58 @@ def get_balance(address):
 
 def construct_account_file(hash):
     if(hash != ""):
-        accMdFile = MdUtils(file_name=hash,title=("Account: " + hash))
-        accMdFile.new_line("#📜Account")
+        account_md_file = MdUtils(file_name=hash,title=("Account: " + hash))
+        account_md_file.new_line("#📜Account")
 
         response = get(get_balance(hash))
         balance = response.json()["result"]
-        accMdFile.new_line(f"Balance: {int(balance) / (10 ** 18)} Ether")
+        account_md_file.new_line(f"Balance: {int(balance) / (10 ** 18)} Ether")
 
-        accMdFile.create_md_file()
+        account_md_file.create_md_file()
 
 def construct_transaction_file():
-    for tx in range(len(transactionQueue)):
-        if tx < len(transactionQueue):
-            transaction = transactionQueue[tx]
-            txMdFile = MdUtils(file_name=transaction.hash,title=("Transaction Hash: " + transaction.hash))
-            txMdFile.new_line("#💸Transaction")
-            txMdFile.new_line(f"Block: [[{block.number}]]")
-            txMdFile.new_line(f"From: [[{transaction.fromAddr}]]")
-            txMdFile.new_line(f"To: [[{transaction.toAddr}]]")
-            txMdFile.new_line(f"Transferred: {transaction.amount} Ether")
+    for tx in range(len(transaction_queue)):
+        if tx < len(transaction_queue):
+            transaction = transaction_queue[tx]
+            transaction_md_file = MdUtils(file_name=transaction.hash,title=("Transaction Hash: " + transaction.hash))
+            transaction_md_file.new_line("#💸Transaction")
+            transaction_md_file.new_line(f"Block: [[{block.number}]]")
+            transaction_md_file.new_line(f"From: [[{transaction.fromAddr}]]")
+            transaction_md_file.new_line(f"To: [[{transaction.toAddr}]]")
+            transaction_md_file.new_line(f"Transferred: {transaction.amount} Ether")
 
             print(transaction.hash)
 
-            txMdFile.create_md_file()
-            if(len(transactionQueue)>0):
-                transactionQueue.pop(tx)
+            transaction_md_file.create_md_file()
+            if(len(transaction_queue)>0):
+                transaction_queue.pop(tx)
 
-        '''construct_account_file(transaction.toAddr)
+'''        construct_account_file(transaction.toAddr)
         construct_account_file(transaction.fromAddr)'''
 
 
 def construct_block_file(block):
     construct_account_file(block.miner)
-    lastBlock = int(block.number) - 1
-    nextBlock = int(block.number) + 1
+    last_block = int(block.number) - 1
+    next_block = int(block.number) + 1
     print(f"{Colours.OKGREEN}Found Block #{block.number}{Colours.ENDC}")
 
     if (find(block.number + ".md", "./") == "None"):
-        mdFile = MdUtils(file_name=block.number,title=("Block #" + block.number))
-        mdFile.new_line("#🧊Block")
-        mdFile.new_line(f"Last Block: [[{lastBlock}]]")
-        mdFile.new_line(f"Next Block: [[{nextBlock}]]")
-        mdFile.new_line(f"Miner: [[{block.miner}]]")
+        md_file = MdUtils(file_name=block.number,title=("Block #" + block.number))
+        md_file.new_line("#🧊Block")
+        md_file.new_line(f"Last Block: [[{last_block}]]")
+        md_file.new_line(f"Next Block: [[{next_block}]]")
+        md_file.new_line(f"Miner: [[{block.miner}]]")
 
-        mdFile.new_line(f"\n Transactions:")
+        md_file.new_line(f"\n Transactions:")
 
         lastHash = ""
         txCount = 0
         for tx in block.transactions:
-            transactionQueue.append(Transaction(tx["from"], tx["to"], int(tx["value"]) / (10 ** 18), tx["hash"]))
+            transaction_queue.append(Transaction(tx["from"], tx["to"], int(tx["value"]) / (10 ** 18), tx["hash"]))
             txCount += 1
-
-
-
-            '''fileCreated = False
-            while(fileCreated == False):
-                txMdFile = MdUtils(file_name=hash,title=("Transaction Hash: " + hash))
-                txMdFile.new_line("#💸Transaction")
-                txMdFile.new_line(f"Block: [[{block.number}]]")
-                txMdFile.new_line(f"From: [[{fromAddr}]]")
-                txMdFile.new_line(f"To: [[{toAddr}]]")
-                txMdFile.new_line(f"Transferred: {int(value) / (10 ** 18)} Ether")
-                txMdFile.create_md_file()
-                print(f"{Colours.OKGREEN}{txCount}. Creating Transaction File: {hash}{Colours.ENDC}")
-                if (find(hash + ".md", "./") != "None"):
-                    fileCreated = True
-
-            if hash != lastHash:
-                mdFile.new_line(f"[[{hash}]]")
-            
-            lastHash = hash'''
-        mdFile.create_md_file()
-        print(f"{len(transactionQueue)} Transactions Found")
+        md_file.create_md_file()
+        print(f"{len(transaction_queue)} Transactions Found")
 
 def find(name, path):
     for root, dirs, files in os.walk(path):
@@ -157,23 +122,23 @@ def find(name, path):
         else:
             return "None"
 
-blockCount = 0
-checkCount = 0
-lastCheckBlock = ""
-while(blockCount < 25):
+blocks_created = 0
+check_count = 0
+latest_block_found = ""
+while(blocks_created < 250):
     block = get_latest_block()
-    checkCount += 1
+    check_count += 1
 
-    if(len(transactionQueue)> 0):
+    if(len(transaction_queue)> 0):
         thread = Thread(target = construct_transaction_file())
         thread.start()
         thread.join()
 
-    if(block.number != lastCheckBlock):
+    if(block.number != latest_block_found):
         construct_block_file(block)
 
-        blockCount += 1
-        checkCount = 0
+        blocks_created += 1
+        check_count = 0
     else:
-        print(f"{Colours.WARNING}{checkCount} No New Blocks | Current Count: {block.number}{Colours.ENDC} | Transaction Queue: {len(transactionQueue)}")
-    lastCheckBlock = block.number
+        print(f"{Colours.WARNING}{check_count} No New Blocks | Current Count: {block.number}{Colours.ENDC} | Transaction Queue: {len(transaction_queue)}")
+    latest_block_found = block.number

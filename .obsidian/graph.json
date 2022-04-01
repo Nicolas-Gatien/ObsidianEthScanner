@@ -11,34 +11,34 @@
       "query": "tag:#🧊Block",
       "color": {
         "a": 1,
-        "rgb": 14048348
+        "rgb": 9437170
       }
     },
     {
       "query": "tag:#💸Transaction",
       "color": {
         "a": 1,
-        "rgb": 14069084
+        "rgb": 16167935
       }
     },
     {
       "query": "tag:#📜Account",
       "color": {
         "a": 1,
-        "rgb": 11392604
+        "rgb": 8454037
       }
     }
   ],
   "collapse-display": true,
   "showArrow": false,
-  "textFadeMultiplier": -3,
-  "nodeSizeMultiplier": 0.920337078651685,
+  "textFadeMultiplier": -1.6,
+  "nodeSizeMultiplier": 1.67749287749288,
   "lineSizeMultiplier": 0.1,
   "collapse-forces": true,
   "centerStrength": 0,
   "repelStrength": 20,
-  "linkStrength": 0.562393162393162,
+  "linkStrength": 0.40835899692037,
   "linkDistance": 30,
-  "scale": 0.018182216305053234,
+  "scale": 0.0078125,
   "close": true
 }
