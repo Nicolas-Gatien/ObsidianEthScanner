@@ -7,24 +7,14 @@ from data_types import Block, Account, Transaction, NFT
 import datetime
 import os
 
+from nice_print import cyan_print, green_print, yellow_print
+
 # Constants
 API_KEY = "QQCFPZXGZPDPRK7CKMM6GIPJTMGRM3CX8J"
 BASE_URL = "https://api.etherscan.io/api"
 
 transaction_queue = []
 account_queue = []
-
-# Classes
-class Colours:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
 
 def get_timestamp():
     now = datetime.datetime.now()
@@ -78,11 +68,11 @@ def construct_transaction_file():
             transaction_md_file = MdUtils(file_name=transaction.hash,title=("Transaction Hash: " + transaction.hash))
             transaction_md_file.new_line("#💸Transaction")
             transaction_md_file.new_line(f"Block: [[{block.number}]]")
-            transaction_md_file.new_line(f"From: [[{transaction.fromAddr}]]")
-            transaction_md_file.new_line(f"To: [[{transaction.toAddr}]]")
+            transaction_md_file.new_line(f"From: [[{transaction.from_address}]]")
+            transaction_md_file.new_line(f"To: [[{transaction.to_address}]]")
             transaction_md_file.new_line(f"Transferred: {transaction.amount} Ether")
 
-            print(transaction.hash)
+            cyan_print(f"{transaction.hash}")
 
             transaction_md_file.create_md_file()
             if(len(transaction_queue)>0):
@@ -96,7 +86,7 @@ def construct_block_file(block):
     construct_account_file(block.miner)
     last_block = int(block.number) - 1
     next_block = int(block.number) + 1
-    print(f"{Colours.OKGREEN}Found Block #{block.number}{Colours.ENDC}")
+    green_print(f"Found Block #{block.number}")
 
     if (find(block.number + ".md", "./") == "None"):
         md_file = MdUtils(file_name=block.number,title=("Block #" + block.number))
@@ -140,5 +130,5 @@ while(blocks_created < 250):
         blocks_created += 1
         check_count = 0
     else:
-        print(f"{Colours.WARNING}{check_count} No New Blocks | Current Count: {block.number}{Colours.ENDC} | Transaction Queue: {len(transaction_queue)}")
+        yellow_print(f"{check_count} No New Blocks | Current Count: {block.number} | Transaction Queue: {len(transaction_queue)}")
     latest_block_found = block.number
