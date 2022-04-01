@@ -14,9 +14,17 @@ def green_print(input):
     print(f"{output}")
 
 def yellow_print(input):
-    output = f"{Colours.WARNING}" + input + f"{Colours.WARNING}"
+    output = f"{Colours.WARNING}" + input + f"{Colours.ENDC}"
     print(f"{output}")
 
 def cyan_print(input):
-    output = f"{Colours.OKCYAN}" + input + f"{Colours.OKCYAN}"
+    output = f"{Colours.OKCYAN}" + input + f"{Colours.ENDC}"
+    print(f"{output}")
+
+def blue_print(input):
+    output = f"{Colours.OKBLUE}" + input + f"{Colours.ENDC}"
+    print(f"{output}")
+
+def red_print(input):
+    output = f"{Colours.FAIL}" + input + f"{Colours.ENDC}"
     print(f"{output}")
