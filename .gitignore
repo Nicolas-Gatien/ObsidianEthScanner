@@ -1,0 +1,8 @@
+# Python File
+venv
+__pycache__
+
+# Obsidian Files
+workspace.json
+graph.json
+*.md

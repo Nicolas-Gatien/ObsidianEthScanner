@@ -70,7 +70,7 @@ def construct_account_file(hash):
 def construct_transaction_file(block):
     for tx in range(len(transaction_queue)):
         if tx < len(transaction_queue):
-            ClearVault()
+            clear_vault()
             transaction = transaction_queue[tx]
             transaction_md_file = MdUtils(file_name=f"vault/{transaction.hash}",title=("Transaction Hash: " + transaction.hash))
             transaction_md_file.new_line("#💸Transaction")
@@ -119,9 +119,9 @@ def find(name, path):
         else:
             return "None"
 
-def ClearVault():
+def clear_vault():
     path = "vault/"
-    max_Files = 100
+    max_Files = 1000
     
     def sorted_ls(path):
         mtime = lambda f: os.stat(os.path.join(path, f)).st_mtime
@@ -130,29 +130,7 @@ def ClearVault():
     del_list = sorted_ls(path)[0:(len(sorted_ls(path))-max_Files)]
     
     for dfile in del_list:
-        if(path + dfile == "vault/.obisidan"):
-            pass
-        else:
-            os.remove(path + dfile)
-
-
-'''blocks_created = 0
-check_count = 0
-latest_block_found = ""
-while(blocks_created < 250):
-    block = get_latest_block()
-    check_count += 1
-
-    if(len(transaction_queue)> 0):
-        thread = Thread(target = construct_transaction_file())
-        thread.start()
-        thread.join()
-
-    if(block.number != latest_block_found):
-        construct_block_file(block)
-
-        blocks_created += 1
-        check_count = 0
-    else:
-        yellow_print(f"{check_count} No New Blocks | Current Count: {block.number} | Transaction Queue: {len(transaction_queue)}")
-    latest_block_found = block.number'''
+        if(path + dfile == "vault/.obsidian"):
+            continue
+        
+        os.remove(path + dfile)
